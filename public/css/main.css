@@ -1,0 +1,30 @@
+body{
+    background-color: aliceblue;
+}
+
+.container{
+    background-color: white;
+    padding-bottom: 40px;
+}
+
+.card-content{
+    overflow: hidden;
+}
+
+#input-tabla-verdad{
+    margin: auto;
+}
+
+.radio-form-out{
+    margin-left: 2px;
+}
+
+.simplificar-btn{
+    position: fixed;
+    display: block;
+
+    bottom: 20px;
+    right: 10%;
+
+    z-index: 2;
+}

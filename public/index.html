@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Proyecto de FDD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.1.0/js/all.js"></script>
+</head>
+
+<body id="body">
+    <div class="container">
+        <button class="button is-rounded is-link simplificar-btn">Simplificar</button>
+        <section class="section">
+            <div>
+                <h1 class="title">
+                    Método de Quine–McCluskey
+                </h1>
+                <div class="columns">
+                    <div class="column control">
+                        <label for="entradas-input">
+                            <h2 class="subtitle">Cantidad de bits</h2>
+                        </label>
+                        <div class="control is-half column is-paddingless is-loading">
+                            <input type="number" id="entradas-input" class="input" min="4" max="7" value="4" />
+                        </div>
+                    </div>
+                    <div class="column">
+                        <h2 class="subtitle">Resultado</h2>
+                        <div class="resultado-ly">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <hr>
+        <section class="section">
+            <table id="input-tabla-verdad" class="table">
+
+            </table>
+        </section>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
