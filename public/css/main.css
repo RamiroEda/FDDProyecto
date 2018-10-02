@@ -11,7 +11,7 @@ body{
     overflow: hidden;
 }
 
-#input-tabla-verdad{
+.table{
     margin: auto;
 }
 
@@ -27,4 +27,18 @@ body{
     right: 10%;
 
     z-index: 2;
+}
+
+td{
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+.section{
+    text-align: center;
+}
+
+#mintermin-latex{
+    overflow-x: auto;
+    overflow-y: hidden;
 }
