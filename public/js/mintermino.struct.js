@@ -9,9 +9,9 @@ class minterminoStruct{
         let newBin = [];
         for (let i = 0; i < bin.length; i++) {
             if(bin[i] == 1){
-                newBin.push(1);
+                newBin.push(OPTION_1);
             }else{
-                newBin.push(0);
+                newBin.push(OPTION_0);
             }
         }
         return newBin;
@@ -21,9 +21,9 @@ class minterminoStruct{
         let newBin = [];
         for (let i = 0; i < bin.length; i++) {
             if(bin[i] == 0){
-                newBin.push(1);
+                newBin.push(OPTION_1);
             }else{
-                newBin.push(0);
+                newBin.push(OPTION_0);
             }
         }
         return newBin;
@@ -40,27 +40,56 @@ class minterminoStruct{
 
         for (let i = 0; i < this.sinComplementar.length; i++) {
             if(this.sinComplementar[i] == min2.sinComplementar[i]){
-                newSin.push(0);
+                newSin.push(OPTION_0);
             }else{
-                newSin.push(1);
+                newSin.push(OPTION_1);
             }
         }
 
         for (let i = 0; i < this.complementados.length; i++) {
             if(this.complementados[i] == min2.complementados[i]){
-                newCom.push(0);
+                newCom.push(OPTION_0);
             }else{
-                newCom.push(1);
+                newCom.push(OPTION_1);
             }
         }
+   
+        return this.equals(newSin, newCom) && this.countUnos(newSin) == 1;
+    }
 
+    countUnos(arr){
+        let tmp = 0;
+        arr.forEach(el => {
+            if(el == 1) tmp++;
+        });
+        return tmp;
+    }
 
-        
-        return newStruct;
+    equals(arr1,arr2){
+        for (let i = 0; i < arr1.length; i++) {
+            if(arr1[i] != arr2[i]) return false;
+        }
+        return true;
     }
 
     AND(min2){
+        let newCom = [];
 
+        console.log();
+
+        for (let i = 0; i < this.complementados.length; i++) {
+            if(this.bin[i] != OPTION_X){
+                if(this.complementados[i] != min2.complementados[i]){
+                    newCom.push(OPTION_X);
+                }else{
+                    newCom.push(this.sinComplementar[i]);
+                }
+            }else{
+                newCom.push(OPTION_X);
+            }
+        }
+
+        return newCom;
     }
 
     println(){

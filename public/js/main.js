@@ -2,9 +2,7 @@ let tablaDeVerdad;
 let stateIsResultado = false;
 const LETRAS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; //Letras para la cantidad de entradas
 
-$(document).ready(e => {
-    init(); //Iniciar todos los objetos y variables
-});
+$(document).ready(init());
 
 async function init(){// Se inicializa de manera asincrona
     tablaDeVerdad = new tablaDeVerdadView($("#entradas-input").attr("value"),"#input-tabla-verdad"); //Se crea la tabla de verdad
@@ -26,8 +24,8 @@ async function init(){// Se inicializa de manera asincrona
     await tablaDeVerdad.createView(); //Se crea la tabla en la interfaz
 }
 
-$(".simplificar-btn").click(e => { //Boton del resultado
-    asyncInitSimplificacion();
+$(".simplificar-btn").click(async function(e) { //Boton del resultado
+    await asyncInitSimplificacion();
 });
 
 async function asyncInitSimplificacion(){// Se hace de manera asincrona
@@ -59,14 +57,14 @@ function bitsToExpresion(bitArray){ //Funcion que convierte un arreglo de Bits a
     let hasNeg = false; //Variable que almacena si se encontro un bit 0
 
     for(let i = 0 ; i < bitArray.length ; ++i){ //Por cada bit en el arreglo
-        if(bitArray[i] == 0 && !hasNeg){ //Si el bit es 0 y ademas no tiene otro Bit en 0 anteriormente entonces concatena la linea superior (negacion) de la entrada
+        if(bitArray[i] == OPTION_0 && !hasNeg){ //Si el bit es 0 y ademas no tiene otro Bit en 0 anteriormente entonces concatena la linea superior (negacion) de la entrada
             exp += "\\overline{"; //Inicializacion de la linea superior en formato LATEX
             hasNeg = true; //Se tiene un 0
-        }else if(bitArray[i] == 1 && hasNeg){ //Si el bit es 1 y ademas el bit anterior es 0
+        }else if(bitArray[i] == OPTION_1 && hasNeg){ //Si el bit es 1 y ademas el bit anterior es 0
             exp += "}"; //Se cierra la negacion de las otras entradas
             hasNeg = false; //No se tiene 0
         }
-        if(bitArray != -1){ //Si el bit existe
+        if(bitArray != OPTION_INVALIDO){ //Si el bit existe
             exp += LETRAS[i]; //Concatena la entrada en letra (como A para representar la entrada 1)
         }
     }
@@ -80,7 +78,7 @@ function bitsToExpresion(bitArray){ //Funcion que convierte un arreglo de Bits a
 function getMinterminos(){ //Esta funcion obtiene los minterminos ingresados por el usuario en la tabla de verdad
     let minter = [];
     for(let i = 0 ; i < tablaDeVerdad.elements.length; ++i){//Por cada elemento en la tabla de verdad
-        if(tablaDeVerdad.elements[i].option == OPTION_1){ //Si el resultado del elemento es un bit 1
+        if(tablaDeVerdad.elements[i].option == OPTION_1 || tablaDeVerdad.elements[i].option == OPTION_X){ //Si el resultado del elemento es un bit 1
             minter.push(tablaDeVerdad.elements[i]); //Se añade el elemento a los minterminos
         }
     }
@@ -100,36 +98,103 @@ function getMinterminos(){ //Esta funcion obtiene los minterminos ingresados por
     return minter; //Debuelve los terminos en su expresion canonica como suma de productos
 }
 
+function removeEmptyRows(arr){
+    for (let i = 0; i < arr.length; i++) {
+        if(arr[i].arr.length == 0){
+            arr.splice(i,1);
+        }
+    }
+    return arr;
+}
+
 function combinarMinterminos(mintClass){
-    let arrCombinaciones = mintClass.minterminosAgrup;
+    let arrCombinaciones = removeEmptyRows(mintClass.minterminosAgrup);
     let hasChanges = false;
-    let loopIt = 0;
+    let newCombinada = [];
+    let finalCombinar = [];
 
     do{
-        console.log("GRUPOS: ",arrCombinaciones);
+        newCombinada = [];
         hasChanges = false;
-        let newCombinada = [];
         for (let i = 0; i < arrCombinaciones.length-1; i++) {
-            let grupo = [];
-            for (let e = 0; e < arrCombinaciones[i].length; e++) {
-                const elG1 = new minterminoStruct(arrCombinaciones[i][e]);
-                elG1.println();
-                for (let j = 0; j < arrCombinaciones[i+1].length; j++) {
-                    const elG2 = new minterminoStruct(arrCombinaciones[i+1][j]);
+            let grupo = {
+                index : arrCombinaciones[i].index.concat(arrCombinaciones[i+1].index).filter(onlyUnique),
+                arr : [],
+            };
+            for (let e = 0; e < arrCombinaciones[i].arr.length; e++) {
+                const elG1 = new minterminoStruct(arrCombinaciones[i].arr[e].arr);
+                let seCombino = false;
+                for (let j = 0; j < arrCombinaciones[i+1].arr.length; j++) {
+                    const elG2 = new minterminoStruct(arrCombinaciones[i+1].arr[j].arr);
+                    if(elG1.sonCombinables(elG2)){
+                        hasChanges = true;
+                        grupo.arr.push({
+                            arr: elG1.AND(elG2),
+                            mintId: arrCombinaciones[i].arr[e].mintId.concat(arrCombinaciones[i+1].arr[j].mintId).filter(onlyUnique)
+                        });
+                        seCombino = true;
+                    }else if(j == arrCombinaciones[i+1].arr.length-1 && !puedeSimplificarce(arrCombinaciones[i-1], elG1) && !seCombino){
+                        finalCombinar.push({
+                            index: arrCombinaciones[i].index.concat(arrCombinaciones[i+1].index).filter(onlyUnique),
+                            arr: arrCombinaciones[i].arr[e],
+                        });
+                    }
                 }
             }
             newCombinada.push(grupo);
         }
-        if(hasChanges){
-            arrCombinaciones = newCombinada;
-        }
 
-        let num = 0;
-        arrCombinaciones.forEach(els => {
-            console.log(num,"-",num+1,els);
-            num++;
-        });
+        const lastIndex = Number(arrCombinaciones.length-1);
+
+        console.log(arrCombinaciones, lastIndex);
+
+        if(hasChanges){
+            let newMint = new simplificacionTabla(newCombinada);
+            newMint.createView("#mintermin-table");
+            arrCombinaciones = newMint.minterminosAgrup;
+        }
     }while(hasChanges);
+
+    for (let i = 0; i < arrCombinaciones.length; i++) {
+        for (let e = 0; e < arrCombinaciones[i].arr.length; e++) {
+            finalCombinar.push({
+                index: arrCombinaciones[i].index,
+                arr: arrCombinaciones[i].arr[e],
+            });
+        }
+    }
+
+    return finalCombinar.filter(contains);
+}
+
+function contains(implicante, index, arr){
+    for (let e = index+1; e < arr.length; e++) {
+        let res = 0;
+        for (let i = 0; i < arr[e].arr.arr.length; i++) {
+            if(implicante.arr.arr[i] == arr[e].arr.arr[i]){
+                res++;
+            }
+        }
+        if(res == implicante.arr.arr.length){
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function puedeSimplificarce(arrAnterior, val){
+    let ret = false;
+    if(arrAnterior != undefined){
+        for (let i = 0; i < arrAnterior.arr.length; i++) {
+            const elG2 = new minterminoStruct(arrAnterior.arr[i].arr);
+            if(elG2.sonCombinables(val)){
+                ret = true;
+            }
+        }
+    }
+
+    return ret;
 }
 
 function countDiferencias(arr, arr2){
@@ -145,13 +210,26 @@ function countDiferencias(arr, arr2){
 }
 
 function simplificarFuncion(els){ //Funcion que miniza la expresion
+    $($("#entradas-input").parent()).addClass("is-loading");
+    $("#mintermin-table").html("");
     $(".simplificar-btn").attr("disabled","");
     let mint = getMinterminos(); //Se obtienen los minterminos
+
+    console.log(mint);
+    
     let mintClass = new tablaMinterminos(mint); //Se crea un objeto que agrupa los minterminos por la cantidad de Bits 1 que contienen
+   
     mintClass.createView("#mintermin-table"); //Se crea la tabla de la agrupacion anterior para mostrarlo en el desarrollo en la intergaz de usuario
+    
     let res = combinarMinterminos(mintClass);
+    
+    let implicantePrimo = new tablaImplicantes(res);
+    implicantePrimo.createView("#mintermin-table", mint);
+    
+    $(".resultado-ly").text(implicantePrimo.getResultado());
     updateLatex(); //Se actualizan las cadenas en formato LATEX
     $(".simplificar-btn").removeAttr("disabled");
+    $($("#entradas-input").parent()).removeClass("is-loading");
 }
 
 function updateLatex(){ //Funcion que actualiza todas las cadenas en LATEX
@@ -174,3 +252,7 @@ function intToBinario(num, numBits){ //Funcion que convierte un entero a un arre
 
     return bin.reverse(); //Se invierten los bits para tenerlos en el formato correcto
 }
+
+function onlyUnique(value, index, self) { 
+    return self.indexOf(value) === index;
+} 

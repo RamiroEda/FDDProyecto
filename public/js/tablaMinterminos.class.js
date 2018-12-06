@@ -2,19 +2,10 @@ class tablaMinterminos{ //Clase para crear un objeto que tenga los minterminos a
     constructor(mins){ //Se crean las variables del objeto
         this.minterminos = mins;
         this.minterminosAgrup = [];
+        this.createAgrup();
     }
 
     createView(elemName){ //Crea una tabla en la interfaz de usuario y agrupa los minterminos
-        for (let i = 0; i <= this.minterminos[0].binaryArray.length; i++) { //Para todos la cantidad de Bits disponibles
-            let arr = [];
-            for (let e = 0; e < this.minterminos.length; e++) {
-                if(this.count(this.minterminos[e].binaryArray) == i){
-                    arr.push(this.minterminos[e].binaryArray);
-                }
-            }
-            this.minterminosAgrup.push(arr);
-        }
-
         let html = '<table class="table is-bordered">'+
                 '<thead>'+
                     '<tr>'+
@@ -24,11 +15,11 @@ class tablaMinterminos{ //Clase para crear un objeto que tenga los minterminos a
                 '</thead>';
 
         for (let i = 0; i < this.minterminosAgrup.length; i++) {
-            if(this.minterminosAgrup[i].length > 0){
+            if(this.minterminosAgrup[i].arr.length > 0){
                 html += "<tr><td>"+i+"</td>";
                 html += "<td>";
-                for (let e = 0; e < this.minterminosAgrup[i].length; e++) {
-                    html+= "<p>"+this.minterminosAgrup[i][e].join("")+"</p>";
+                for (let e = 0; e < this.minterminosAgrup[i].arr.length; e++) {
+                    html+= "<p>"+this.minterminosAgrup[i].arr[e].arr.join("")+"</p>";
                 }
                 html += "</td>";
                 html += "</tr>";
@@ -37,7 +28,26 @@ class tablaMinterminos{ //Clase para crear un objeto que tenga los minterminos a
     
         html += '</table>';
 
-        $(elemName).html(html);
+        $(elemName).html($(elemName).html()+html);
+    }
+
+    createAgrup(){
+        for (let i = 0; i <= this.minterminos[0].binaryArray.length; i++) { //Para todos la cantidad de Bits disponibles
+            let arrObj = {
+                index : [i],
+                arr : [],
+            };
+            for (let e = 0; e < this.minterminos.length; e++) {
+                if(this.count(this.minterminos[e].binaryArray) == i){
+                    arrObj.arr.push({
+                        arr: this.minterminos[e].binaryArray,
+                        mintId: [this.minterminos[e].id]
+                    });
+                }
+            }
+            this.minterminosAgrup.push(arrObj);
+        }
+        console.log(this.minterminosAgrup);
     }
 
     count(arr){
